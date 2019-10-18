@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import FormValidator from './FormValidator';
 
 class Formulario extends Component {
 
@@ -6,13 +7,36 @@ class Formulario extends Component {
 
         super(props);
 
-        this.stateInicial = {
+        this.formValidator = new FormValidator([
+            {
+                field: 'nome',
+                method: 'isEmpty',
+                validWhen: false,
+                message: 'Enre com um nome'
+            },
+            {
+                field: 'livro',
+                method: 'isEmpty',
+                validWhen: false,
+                message: 'Entre com um livro'
+            },
+            {
+                field: 'preco',
+                method: 'isInt',
+                args: [{ min: 0, max: 99999 }],
+                validWhen: true,
+                message: 'Entre com um valor numérico'
+            }
+        ]);
+
+        this.initialState = {
             nome: '',
             livro: '',
-            preco: ''
+            preco: '',
+            validation: this.formValidator.valid()
         };
 
-        this.state = this.stateInicial;
+        this.state = this.initialState;
     }
 
     handleChange = event => {
@@ -26,8 +50,22 @@ class Formulario extends Component {
 
     submit = () => {
 
-        this.props.handleSubmit(this.state);
-        this.setState(this.stateInicial);
+        const validation = this.formValidator.validate(this.state);
+
+        if (validation.isValid) {
+
+            this.props.handleSubmit(this.state);
+            this.setState(this.initialState);
+        }
+        else {
+
+            const { nome, livro, preco } = validation;
+            const fields = [ nome, livro, preco ];
+
+            const invalidFields = fields.filter(elem => elem.isInvalid);
+
+            invalidFields.forEach(console.log);
+        }
     };
 
     render() {
